@@ -11,18 +11,19 @@ use GuzzleHttp\Client;
 class AppController extends Controller
 {
     public function getPokemones()
-    {
+     {
         $cliente = new Client();
-        $api= PokeApi::getUrlApi();
+        $pokeApi = new PokeApi();
+        $api = $pokeApi->getUrlApi();
         $respuesta = $cliente->get($api . "pokemon?limit=15");
-        $datos = $respuesta->json();
+        $datos = json_decode($respuesta->getBody(), true);
 
-        foreach ($datos->results as $pokemon) {
-            $pokemonDetalle = $cliente->get($pokemon->url);
-            $pokemonDatos = $pokemonDetalle->json();
+        foreach ($datos['results'] as $pokemon) {
+            $pokemonDetalle = $cliente->get($pokemon['url']);
+            $pokemonDatos = json_decode($pokemonDetalle->getBody(), true);
             Pokemon::create([
-                'nombre' => $pokemonDatos->name,
-                'tipo' => $pokemonDatos->types[0]->type->name,
+                'nombre' => $pokemonDatos['name'],
+                'tipo' => $pokemonDatos['types'][0]['type']['name'],
             ]);
         }
         return response()->json(['message' => 'Pokemons Obtenidos Exitosamente']);
